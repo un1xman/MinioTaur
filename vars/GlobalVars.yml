@@ -1,0 +1,6 @@
+MINIO_ALIAS:  #Alias of Minio Server
+USERNAME:     #Username which you want create
+VAULT_URL:    #Vault API url (http://myvault.local/v1/secret/minio)
+VAULT_TOKEN:  #Vault auth token
+CONSUL_URL:   #Consul API url (http://myconsul.local/v1/kv/minio)
+CONSUL_TOKEN: #Consul auth token 

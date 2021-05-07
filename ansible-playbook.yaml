@@ -1,0 +1,16 @@
+---
+- name: Minio
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - vars/GlobalVars.yaml
+  vars:
+    pwd_alias: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+  tasks:
+    - set_fact:
+        MINIO_PASS: "{{ pwd_alias }}"
+    - debug:
+        msg: "{{ MINIO_PASS }}"
+    - include: included/vault-consul-integration.yaml
+    
+

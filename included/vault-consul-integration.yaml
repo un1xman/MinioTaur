@@ -1,0 +1,41 @@
+- name: Create Minio user
+  shell: |
+      mc admin user add {{ MINIO_ALIAS }}/  "{{ USERNAME }}" "{{ MINIO_PASS }}"
+  
+- name: Update Vault
+  uri:
+    url: "{{ VAULT_URL }}"
+    method: PUT 
+    body: "{ \"{{ USERNAME }}\": \"{{ MINIO_PASS }}\" }"
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      X-Vault-Token: "{{ VAULT_TOKEN }}"
+    validate_certs: False
+    status_code: 204
+
+- name: Create Bucket
+  shell: |
+    mc mb {{ MINIO_ALIAS }}/{{ USERNAME }}-bucket
+
+- name: Change Policy Json 
+  shell: |
+    sed -i 's/testuser/{{ USERNAME }}/g' template-policy.json 
+
+- name: Create Policy From File
+  shell: |
+    mc admin policy add {{ MINIO_ALIAS }}/ {{ USERNAME }}-policy template-policy.json --debug
+
+- name: Attach Policy to the User 
+  shell: | 
+    mc admin policy set {{ MINIO_ALIAS }} {{ USERNAME }}-policy user={{ USERNAME }}
+
+- name: Send Policy to Consul
+  uri: 
+    url: "{{ CONSUL_URL }}"
+    method: PUT 
+    body_format: json 
+    body: "{{ lookup('file','template-policy.json') }}"
+    headers: 
+      X-Consul-Token: "{{ CONSUL_TOKEN  }}"
+    validate_certs: False
